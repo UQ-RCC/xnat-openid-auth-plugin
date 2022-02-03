@@ -47,10 +47,10 @@ public class OpenIdConnectUserDetails extends XDATUser {
 			OpenIdAuthPlugin plugin) {
 		this.openIdUserInfo = userInfo;
 		this.providerId = providerId;
-		this.setUsername(providerId + "_" + userInfo.get("sub"));
 		this.token = token;
 		this.plugin = plugin;
 
+		this.setUsername(getUsername(userInfo));
 		this.email = getUserInfo(userInfo, "emailProperty", "");
 		this.setFirstname(getUserInfo(userInfo, "givenNameProperty", ""));
 		this.setLastname(getUserInfo(userInfo, "familyNameProperty", ""));
@@ -62,6 +62,23 @@ public class OpenIdConnectUserDetails extends XDATUser {
 		String propVal = userInfo.get(plugin.getProperty(providerId, propName));
 		return propVal != null ? propVal : defaultVal;
 	}
+
+	private String getUsername(Map<String, String> userInfo) {
+		String prop, idp, sub;
+		prop = plugin.getProperty(providerId, "providerProperty");
+		if (prop != null && userInfo.containsKey(prop)) {
+			idp = userInfo.get(prop);
+		} else {
+			idp = providerId;
+		}
+		prop = plugin.getProperty(providerId, "providerSubProperty");
+		if (prop != null && userInfo.containsKey(prop)) {
+			sub = userInfo.get(prop);
+		} else {
+			sub = userInfo.get("sub");
+		}
+		return idp + "_" + sub;
+        }
 
 	public OAuth2AccessToken getToken() {
 		return token;
